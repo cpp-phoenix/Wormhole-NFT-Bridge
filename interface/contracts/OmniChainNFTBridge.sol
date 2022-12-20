@@ -38,7 +38,7 @@ contract OmniChainNFTBridge is ERC721 {
         mintToken(msg.sender);
     }
 
-    function _debitFrom(address _from, uint16, bytes memory, uint _tokenId) internal virtual override {
+    function _debitFrom(address _from, uint _tokenId) internal {
         require(_isApprovedOrOwner(_msgSender(), _tokenId), "ONFT721: send caller is not owner nor approved");
         require(ERC721.ownerOf(_tokenId) == _from, "ONFT721: send from incorrect owner");
         _transfer(_from, address(this), _tokenId);
@@ -75,12 +75,12 @@ contract OmniChainNFTBridge is ERC721 {
         uint _tokenId
     ) external payable {
         // Wormhole recommends that message-publishing functions should return their sequence value
-        __debitFrom(msg.sender,"",_tokenId);
+        _debitFrom(msg.sender, _tokenId);
         _sendMessageToRecipient(destAddress, destChainId, message, nonce);
         nonce++;
     }
 
-    function _creditTo(uint16, address _toAddress, uint _tokenId) internal virtual override {
+    function _creditTo(address _toAddress, uint _tokenId) internal {
         require(!_exists(_tokenId) || (_exists(_tokenId) && ERC721.ownerOf(_tokenId) == address(this)));
         if (!_exists(_tokenId)) {
             _safeMint(_toAddress, _tokenId);
@@ -94,16 +94,18 @@ contract OmniChainNFTBridge is ERC721 {
         myTrustedContracts[sender][_chainId] = true;
     }
 
-    function stringToUint(string s) returns (uint result) {
-        bytes memory b = bytes(s);
-        uint i;
-        result = 0;
-        for (i = 0; i < b.length; i++) {
-            uint c = uint(b[i]);
-            if (c >= 48 && c <= 57) {
-                result = result * 10 + (c - 48);
-            }
+    function st2num(string memory numString) public pure returns(uint) {
+        uint  val=0;
+        bytes   memory stringBytes = bytes(numString);
+        for (uint  i =  0; i<stringBytes.length; i++) {
+            uint exp = stringBytes.length - i;
+            bytes1 ival = stringBytes[i];
+            uint8 uval = uint8(ival);
+           uint jval = uval - uint(0x30);
+   
+           val +=  (uint(jval) * (10**(exp-1))); 
         }
+      return val;
     }
 
     // Verification accepts a single VAA, and is publicly callable.
@@ -149,6 +151,6 @@ contract OmniChainNFTBridge is ERC721 {
         processedMessages[vm.hash] = true;
 
         // The message content can now be trusted, slap into messages
-        _creditTo(sender, stringToUint(message));
+        _creditTo(sender, st2num(message));
     }
 }
