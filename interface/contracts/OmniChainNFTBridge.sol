@@ -1,7 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "https://github.com/wormhole-foundation/wormhole/blob/dev.v2/ethereum/contracts/interfaces/IWormhole.sol";import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "https://github.com/wormhole-foundation/wormhole/blob/dev.v2/ethereum/contracts/interfaces/IWormhole.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract OmniChainNFTBridge is ERC721 {
 
